@@ -1,0 +1,84 @@
+id: 27
+logical_id: fabricdemogallery-fabriciq
+name: FabricIQ Ontology and Data Agent
+description: >-
+  Build a semantic ontology over a Lakehouse (business entities) and an
+  Eventhouse (time-series), bind it to real tables, and expose it through a
+  Fabric Data Agent for natural-language, context-aware analytics.
+date_added: 07/01/2026
+workload_tags:
+  - Ontology
+  - Real-Time Intelligence
+  - Data Science
+scenario_tags:
+  - Modeling
+type: Demo
+source:
+  repo_url: https://github.com/omerizm47/fabric-jumpstart-fabriciq-ontology.git
+  repo_ref: v1.0.1
+  workspace_path: fabricdemogallery-fabriciq/
+# Each install option (industry) has its own subfolder under workspace_path with
+# a complete fabric-cicd source; the installer deploys exactly one option folder.
+install_options_label: Industry choice
+install_options:
+  - construction
+  - education
+  - energy-grid
+  - financial-services
+  - healthcare
+  - hospitality
+  - manufacturing-qc
+  - media
+  - professional-services
+  - retail-sales
+  - technology
+  - transportation
+# fabric-cicd deploys everything natively: the Lakehouse, Eventhouse (with its
+# KQL database), the documentation notebook, the Ontology, and both Data Agents.
+# The sample data is loaded by the installer's declarative data_load block below
+# (CSVs from the industry .iq archive), so the install is a single step.
+items_in_scope:
+  - Lakehouse
+  - Eventhouse
+  - KQLDatabase
+  - Notebook
+  - Ontology
+  - DataAgent
+data_load:
+  source: fabricdemogallery-fabriciq/data/{install_option}_ontology_package.iq
+  shift_timestamps_to_now: true
+  lakehouse_tables:
+    lakehouse: fabriciq_lakehouse
+    archive_path: instance_data/
+  kusto_tables:
+    database: fabriciq_eventhouse
+    archive_path: events_data/
+  refresh_definitions:
+    - FabricIqOntology.Ontology
+entry_point: GettingStarted.Notebook
+owner_email: omerguzel@microsoft.com
+difficulty: Advanced
+last_updated: 07/03/2026
+minutes_to_deploy: 10
+minutes_to_complete_jumpstart: 20
+mermaid_diagram: |
+  graph LR
+    DATA[Industry data]:::U1F4E6
+
+    subgraph Fabric:::Workspace
+      GS[GettingStarted]:::Notebook
+      LH[fabriciq_lakehouse]:::Lakehouse
+      EH[fabriciq_eventhouse]:::Eventhouse
+      ONT[FabricIqOntology]:::Ontology
+      OAG[FabricIqOntologyAgent]:::DataAgent
+      DAG[FabricIqDirectAgent]:::DataAgent
+      direction LR
+    end
+
+    DATA --> LH
+    DATA --> EH
+    LH --> ONT
+    EH --> ONT
+    ONT --> OAG
+    LH -.-> DAG
+    EH -.-> DAG
